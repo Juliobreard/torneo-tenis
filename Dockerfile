@@ -1,29 +1,28 @@
-# Imagen base de PHP con extensiones necesarias
 FROM php:8.2-fpm
 
-# Instalar dependencias
 RUN apt-get update && apt-get install -y \
-    libpng-dev \
-    libjpeg-dev \
-    libfreetype6-dev \
+    nginx \
     zip \
     unzip \
     git \
     curl \
+    libpng-dev \
     libonig-dev \
     libxml2-dev \
     && docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd
 
-COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-WORKDIR /var/www
-
+WORKDIR /var/www/html
 COPY . .
 
-# Dar permisos 
-RUN chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache
+RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
+RUN composer install --no-dev --optimize-autoloader
 
-# Exponer el puerto del servidor PHP
-EXPOSE 9000
+# NGINX
+COPY docker/nginx/default.conf /etc/nginx/sites-available/default
 
-CMD ["php-fpm"]
+# Exponer el puerto 80 para HTTP
+EXPOSE 80
+
+# Iniciar NGINX y PHP-FPM
+CMD service nginx start && php-fpm
