@@ -1,27 +1,29 @@
-# Imagen base de PHP con Apache
-FROM php:8.2-apache
+# Imagen base de PHP con extensiones necesarias
+FROM php:8.2-fpm
 
-# Instalar extensiones necesarias para Laravel
+# Instalar dependencias
 RUN apt-get update && apt-get install -y \
-    libpng-dev libjpeg-dev libfreetype6-dev zip unzip \
-    && docker-php-ext-configure gd --with-freetype --with-jpeg \
-    && docker-php-ext-install gd pdo pdo_mysql bcmath
+    libpng-dev \
+    libjpeg-dev \
+    libfreetype6-dev \
+    zip \
+    unzip \
+    git \
+    curl \
+    libonig-dev \
+    libxml2-dev \
+    && docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd
 
-# Instalar Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-# Copiar archivos del proyecto
-WORKDIR /var/www/html
+WORKDIR /var/www
+
 COPY . .
 
-# Instalar dependencias de Laravel
-RUN composer install --no-dev --optimize-autoloader
+# Dar permisos 
+RUN chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache
 
-# Cambiar permisos
-RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
+# Exponer el puerto del servidor PHP
+EXPOSE 9000
 
-# Exponer el puerto de Apache
-EXPOSE 80
-
-# Comando para iniciar Apache
-CMD ["apache2-foreground"]
+CMD ["php-fpm"]
