@@ -28,7 +28,8 @@ COPY docker/nginx/default.conf /etc/nginx/conf.d/default.conf
 # Dar permisos a los archivos
 RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
 
-EXPOSE 8000
+EXPOSE 80
 
-# Comando de inicio (supervisord para manejar PHP-FPM y Nginx en el mismo contenedor)
-CMD ["sh", "-c", "service nginx start && php-fpm"]
+
+CMD service nginx start && php-fpm -F
+
