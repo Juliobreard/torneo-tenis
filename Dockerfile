@@ -23,8 +23,7 @@ RUN composer install --no-dev --optimize-autoloader
 
 #COPY docker/nginx/default.conf /etc/nginx/sites-available/default
 COPY docker/nginx/default.conf /etc/nginx/conf.d/default.conf
-# Crear enlace simbólico para que Nginx reconozca la configuración
-RUN ln -s /etc/nginx/sites-available/default /etc/nginx/sites-enabled/default
+
 
 # Dar permisos a los archivos
 RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
