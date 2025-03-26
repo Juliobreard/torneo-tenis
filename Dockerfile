@@ -1,35 +1,22 @@
 FROM php:8.2-fpm
 
+
 RUN apt-get update && apt-get install -y \
-    nginx \
-    libpng-dev \
-    libjpeg-dev \
-    libfreetype6-dev \
-    zlib1g-dev \
-    libzip-dev \
-    git \
-    unzip
-    
-RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
-    && docker-php-ext-install gd zip pdo pdo_mysql
+    zip unzip curl git libpng-dev libonig-dev libxml2-dev \
+    && docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd
 
-RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
+COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-COPY . /var/www/html
+RUN git clone https://github.com/Juliobreard/torneo-tenis.git /var/www
 
-WORKDIR /var/www/html
+WORKDIR /var/www
 
 RUN composer install --no-dev --optimize-autoloader
 
-#COPY docker/nginx/default.conf /etc/nginx/sites-available/default
-COPY docker/nginx/default.conf /etc/nginx/conf.d/default.conf
+RUN chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache
 
+# Exponer el puerto 9000 para Nginx
+EXPOSE 9000
 
-# Dar permisos a los archivos
-RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
-
-EXPOSE 80
-
-
-CMD service nginx start && php-fpm -F
-
+# iniciar PHP-FPM
+CMD ["php-fpm"]
