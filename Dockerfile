@@ -7,7 +7,9 @@ RUN apt-get update && apt-get install -y \
 
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-RUN git clone https://github.com/Juliobreard/torneo-tenis.git /var/www
+
+RUN [ -d "/var/www/.git" ] || git clone https://github.com/Juliobreard/torneo-tenis.git /var/www
+
 
 WORKDIR /var/www
 
