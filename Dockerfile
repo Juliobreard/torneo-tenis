@@ -7,10 +7,6 @@ RUN apt-get update && apt-get install -y \
 
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-
-RUN [ -d "/var/www/.git" ] || git clone https://github.com/Juliobreard/torneo-tenis.git /var/www
-
-
 WORKDIR /var/www
 
 RUN composer install --no-dev --optimize-autoloader
