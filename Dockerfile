@@ -1,24 +1,31 @@
 FROM php:8.2-fpm
 
-# Instalar dependencias
-RUN apt-get update && apt-get install -y git unzip curl libpq-dev libpng-dev libjpeg-dev libfreetype6-dev
+RUN apt-get update && apt-get install -y \
+    git \
+    unzip \
+    curl \
+    libpq-dev \
+    libpng-dev \
+    libjpeg-dev \
+    libfreetype6-dev \
+    && docker-php-ext-install pdo pdo_mysql \
+    && rm -rf /var/lib/apt/lists/*
 
-# Configurar el directorio de trabajo
 WORKDIR /var/www
 
-# Eliminar archivos previos y clonar el repositorio
 RUN rm -rf /var/www/* && \
     git clone https://github.com/Juliobreard/torneo-tenis.git /var/www
 
-# Establecer permisos
-RUN chown -R www-data:www-data /var/www
+COPY .env /var/www/.env
 
-# Instalar Composer y dependencias
+RUN chown -R www-data:www-data /var/www && \
+    chmod -R 775 /var/www/storage /var/www/bootstrap/cache
+
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
-RUN composer install --no-dev --optimize-autoloader
+RUN composer install --no-dev --optimize-autoloader --working-dir=/var/www
 
-# Exponer el puerto
+RUN php artisan key:generate
+
 EXPOSE 9000
 
-# Comando por defecto
 CMD ["php-fpm"]
