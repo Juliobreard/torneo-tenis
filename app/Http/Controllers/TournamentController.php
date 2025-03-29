@@ -63,19 +63,58 @@ class TournamentController extends Controller
         return response()->json($tournaments);
     }
     public function getTournament($id)
-{
+    {
 
-    $tournament = Tournament::with('winner')->find($id);
+        $tournament = Tournament::with('winner')->find($id);
 
 
-    if (!$tournament) {
+        if (!$tournament) {
+            return response()->json([
+                'message' => 'Torneo no encontrado',
+            ], 404);
+        }
+
         return response()->json([
-            'message' => 'Torneo no encontrado',
-        ], 404);
+            'tournament' => $tournament,
+        ]);
+    }
+    public function getTournamentsByDate($date)
+    {
+        $tournaments = Tournament::with('winner')
+                        ->whereDate('date', $date) // Filtra por fecha exacta
+                        ->get(); // Usa get() en lugar de first()
+    
+        if ($tournaments->isEmpty()) {
+            return response()->json([
+                'message' => 'No se encontraron torneos para la fecha: ' . $date,
+            ], 404);
+        }
+    
+        return response()->json([
+            'count' => $tournaments->count(),
+            'tournaments' => $tournaments,
+        ]);
     }
 
-    return response()->json([
-        'tournament' => $tournament,
-    ]);
-}
+    public function getTournamentsByDateRange($startDate, $endDate = null)
+    {
+        $query = Tournament::with('winner')
+                ->whereDate('date', '>=', $startDate);
+
+        if ($endDate) {
+            $query->whereDate('date', '<=', $endDate);
+        }
+
+        $tournaments = $query->get();
+
+        if ($tournaments->isEmpty()) {
+            return response()->json([
+                'message' => 'No se encontraron torneos en el rango especificado',
+            ], 404);
+        }
+
+        return response()->json([
+            'tournaments' => $tournaments,
+        ]);
+    }
 }

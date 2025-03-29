@@ -11,3 +11,7 @@ Route::get('/tournaments/{id}', [TournamentController::class, 'getTournament']);
 Route::get('/test', function () {
     return response()->json(['message' => 'Hello, World!']);
 });
+Route::get('/tournaments/by-date/{date}', [TournamentController::class, 'getTournamentsByDate']);
+
+// Búsqueda por rango (opcional)
+Route::get('/tournaments/by-range/{startDate}/{endDate?}', [TournamentController::class, 'getTournamentsByDateRange']);
